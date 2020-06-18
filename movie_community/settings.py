@@ -30,9 +30,9 @@ NAVER_CLIENT_SECRET= config('NAVER_CLIENT_SECRET')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
-DEBUG = bool( os.environ.get('DJANGO_DEBUG', True) )
+DEBUG = bool(os.environ.get('DJANGO_DEBUG', True) )
 
-ALLOWED_HOSTS = ['mysterious-plateau-50164.herokuapp.com','127.0.0.1']
+ALLOWED_HOSTS = ['justiceladder2.herokuapp.com','127.0.0.1']
 
 
 # Application definition
