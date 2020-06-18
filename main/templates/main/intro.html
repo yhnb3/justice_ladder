@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+<title>Justice ladder</title>
+{% endblock %}
+
+{% block body %}
+<div id="carouselExampleSlidesOnly" class="carousel slide" data-ride="carousel">
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <img src="{% static 'images/poster1.jpg' %}" class="d-block w-100" alt="...">
+    </div>
+    <div class="carousel-item">
+      <img src="{% static 'images/poster5.jpg' %}" class="d-block w-100" alt="...">
+    </div>
+    <div class="carousel-item">
+      <img src="{% static 'images/poster2.jpg' %}" class="d-block w-100" alt="...">
+    </div>
+    <div class="carousel-item">
+      <img src="{% static 'images/poster6.png' %}" class="d-block w-100" alt="...">
+    </div>
+  </div>
+</div>
+
+<div class="container w-75">
+  {% if request.user.is_authenticated %}
+  <p id="rcTitle" class="my-2 mt-5 h2 font-weight-bold page-title">{{ user.nickname }}님이 마음에 들어할 추천 영화</p>
+  <hr>
+  <div class="row mb-5">
+    {% for movie in recommend_movie %}
+    <div class="col-6 col-sm-4 col-md-2 mb-1">
+      <a href="{% url 'community:movie_detail' movie.pk %}">
+          <img src="{{ movie.poster_path }}"onerror="this.src='{% static 'img/noposter.jpg' %}'" class="hvr-bob mr-3" alt="..." style="width: 100%;">
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% endif %}
+  <p class="my-2 mt-3 h2 page-title font-weight-bold text-truncate">{{ recommend_title }}</p>
+  <hr>
+  <div class="row mb-5">
+    {% for movie in movies %}
+    <div class="col-6 col-sm-4 col-md-2 mb-1">
+      <a href="{% url 'community:movie_detail' movie.pk %}">
+          <img src="{{ movie.poster_path }}"onerror="this.src='{% static 'img/noposter.jpg' %}'" class="hvr-bob mr-3" alt="..." style="width: 100%;">
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <p class="my-2 mt-3 h2 page-title font-weight-bold text-truncate">최신 등록 영화</p>
+  <hr>
+  <div class="row mb-5">
+    {% for movie in new_movie %}
+    <div class="col-6 col-sm-4 col-md-2 mb-1">
+      <a href="{% url 'community:movie_detail' movie.pk %}">
+          <img src="{{ movie.poster_path }}"onerror="this.src='{% static 'img/noposter.jpg' %}'" class="hvr-bob mr-3" alt="..." style="width: 100%;">
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+  const title = document.querySelector('#rcTitle')
+  window.onresize = function(e) {
+    resize()
+  }
+
+  function resize() {
+    if (window.innerWidth >= 757) {
+      if (title !== null) {
+        title.innerText = '{{ user.nickname }}님이 마음에 들어할 추천 영화'
+      }
+    } else {
+      if (title !== null) {
+        title.innerText = '맞춤 영화'
+      }
+    }
+  }
+
+  resize()
+</script>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% load static %}
+
+{% block title %}
+<title>{{ article.title }} @{{ article.user.nickname }}</title>
+{% endblock %}
+
+{% block body %}
+<div class="container w-75 my-5 bg-white">
+  <div class="row justify-content-between mx-2 my-0">
+    <div id="title" class="h2 mt-3 mb-0">{{ article.title }}</div>
+    <div class="mt-auto row ml-auto mr-1">
+      {% if request.user == article.user %}
+      <span class="mt-auto mb-auto">
+        <a class="text-decoration-none d-inline-block mr-2" href="{% url 'community:article_update' article.pk %}">수정</a>
+      </span>
+      <span class="mt-auto mb-auto">
+        <a class="text-decoration-none text-danger d-inline-block mr-2" href="{% url 'community:article_delete' article.pk %}">삭제</a>
+      </span>
+      {% endif %}
+      <span class="ml-2 mt-auto mb-auto">
+        <a class="text-decoration-none text-body" href="{% url 'accounts:detail' article.user.nickname %}">
+          {{ article.user.nickname }}
+        </a>
+      </span>
+      <a class="text-decoration-none text-body" href="{% url 'accounts:detail' article.user.nickname %}">
+        <img class="img-profile" src="{{ article.user.image_thumbnail.url }}" style="max-width: 35px;">
+      </a>
+    </div>
+  </div>
+  {% if article.created_at|date:"Y/m/d H:i s A" == article.updated_at|date:"Y/m/d H:i s A" %}
+    <small class="ml-3 mt-auto mb-auto">{{ article.created_at|date:"Y/m/d H:i" }}</small>
+  {% else %}
+    <small class="ml-3 mt-auto mb-auto">{{ article.updated_at|date:"Y/m/d H:i" }} <small class="text-muted">(수정됨)</small></small>
+  {% endif %}
+  <hr>
+  <div class="card mb-3" style="max-width: 540px;">
+    <div class="row no-gutters">
+      <div class="col-12 col-sm-3">
+        <a class="text-decoration-none text-body" href="{% url 'community:movie_detail' article.movie.pk %}">
+          <img id="poster" src="{{ article.movie.poster_path }}"onerror="this.src='{% static 'img/noposter.jpg' %}'" class="mr-3" alt="..." style="height: 100%;">
+        </a>
+      </div>
+      <div class="col-12 col-sm-9">
+        <div class="card-body">
+          <a class="text-decoration-none text-body" href="{% url 'community:movie_detail' article.movie.pk %}">
+            <h5 class="card-title">{{ article.movie.title|safe }}</h5>
+          </a>
+          <small class="card-text">감독 : {{ article.movie.director }}</small>
+          <br>
+          <small class="card-text">출연 : {{ article.movie.actor }}</small>
+          <p>평점 <span class="font-weight-bold">{{ article.movie.user_rate }}</span>점<small class="text-muted ml-2">자료제공 Naver</small></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="jumbotron jumbotron-fluid">
+    <div class="container">
+      <p id="content">{{ article.content|linebreaksbr }}</p>
+    </div>
+  </div>
+
+<!--좋아요 기능 구현-->
+
+{% if request.user in article.like_users.all %}
+<i class="fas fa-heart fa-lg like-btn" data-pk="{{ article.pk }}" style="color:crimson"></i>
+{% else %}
+<i class="fas fa-heart fa-lg like-btn" data-pk="{{ article.pk }}" style="color:black"></i>
+{% endif %}
+<span class="cnt-{{ article.pk }}">{{ article.like_users.all|length }}</span> 명이 이 글을 좋아합니다
+<hr>
+  <!-- comment 생성 -->
+{% if user.is_authenticated %}
+  <form method="POST" action="{% url 'community:comment_create' article.pk%}">
+      {% csrf_token %}
+      {% bootstrap_form comment_form %}
+      <button class="btn btn-outline-dark btn-block">작 성</button>
+      <div></div>
+  </form>
+{% endif %}
+<div class="bg-white">
+<hr>
+  <!-- comment 보여주기 -->
+{% for comment in article.comment_set.all %}
+<div class="row">
+  <div class="col-12 col-sm-2">
+    <p class="mb-0"><small>{{ comment.user.nickname }}</small></p>
+  </div>
+  <div class="col-12 col-sm-8">
+    <p class="mb-0"> <small>{{ comment.content }}</small></p>
+  </div>
+  <div class="col-12 col-sm-2">
+    {% if comment.user == request.user %}
+      <a class="text-decoration-none text-danger" href="{% url 'community:comment_delete' comment.pk %}"><small>삭제</small></a>
+      <button type="button" class="btn btn-link commentbtn" data-toggle="modal" data-target="#commentModal" data-id="{{ comment.id }}" style="padding-top:3px;"><small>수정</small></button>
+      <!-- 모달창 -->
+      <div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Comment 수정</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form method="POST" action="" class="commentform">
+                {% csrf_token %}
+                {% bootstrap_form comment_form %}
+                <button class="btn btn-primary float-right">수정</button>
+              </form>
+            </div>
+            <div class="modal-footer">
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    <div><small class="text-muted">{{ comment.created_at|date:"Y.m.d H:i" }}</small></div>
+  </div>
+</div>
+  <hr>
+{% endfor %}
+</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+  const likeBtns = document.querySelectorAll('.like-btn')
+  // console.log(likeBtns)
+  likeBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(event) {
+      axios.get(`/community/${btn.dataset.pk}/like`)
+        .then(function(res) {
+          if (res.data.liked) {
+            btn.style.color = 'crimson'
+          } else {
+            btn.style.color = 'black'
+          }
+          const cntSpan = document.querySelector(`.cnt-${btn.dataset.pk}`)
+          // console.log(res.data.count)
+          if (res.data.count !== undefined) {
+            cntSpan.innerText = res.data.count
+          }
+          
+        })
+        .catch(function(err){
+          console.log(err)
+        })
+    })
+  })
+  const commentBtns = document.querySelectorAll('.commentbtn')
+  // console.log(likeBtns)
+  commentBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(event) {
+      const modalcommentid = btn.dataset.id
+      console.log(modalcommentid)
+      const commentform = document.querySelector('.commentform')
+      commentform.action = `/community/${modalcommentid}/comment_update`
+    })
+  })
+
+  const poster = document.querySelector('#poster')
+  const title = document.querySelector('#title')
+  const content = document.querySelector('#content')
+  window.onresize = function(e) {
+    resize()
+  }
+
+  function resize() {
+    if (window.innerWidth >= 575) {
+      poster.style.width = 'auto'
+      poster.style.height = '100%'
+      title.classList.remove('h6')
+      content.classList.remove('h6')
+
+
+    } else {
+      poster.style.width = '100%'
+      poster.style.height = 'auto'
+      title.classList.add('h6')
+      content.classList.add('h6')
+
+    }
+  }
+
+  resize()
+</script>
+{% endblock %}

@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+<title>{{ user.nickname}}님의 Justice ladder 활동</title>
+{% endblock %}
+
+{% block body %}
+<link rel="stylesheet" href="{% static 'accounts/style.css' %}" type="text/css" media="screen">
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-4 pl-lg-5">
+            <div class="row justify-content-end">
+                <img class="img-profile" src="{{ user.image_thumbnail.url }}">
+            </div>
+        </div>
+        <div class="d-flex flex-column px-5 col-8">
+            <div id="userNameBtn" class="d-flex flex-row align-items-baseline justify-content-between">
+              <h2 class="text-truncate" id="userNickname" data-nickname="{{ user.nickname }}">{{ user.nickname }}</h2>
+              {% if request.user != user %}
+                  {% if request.user in user.followers.all %}
+                    <a class="btn btn-outline-success btn-sm ml-4 editBtn" href="{% url 'accounts:follow' user.pk %}">팔로우 중</a>
+                  {% else %}
+                    <a class="btn btn-outline-primary btn-sm ml-4 editBtn" href="{% url 'accounts:follow' user.pk %}">팔로우</a>
+                  {% endif %}
+              {% else %}
+                  <a class="btn btn-btn btn-outline-secondary btn-sm ml-4 text-truncate editBtn" href="{% url 'accounts:edit' %}">프로필 수정</a>
+              {% endif %}
+            </div>
+            <div class="d-flex flex-row">
+                <p>팔로워 <span class="font-weight-bold">{{ user.followers.all|length }}</span></p>
+                <P class="ml-4">팔로우 <span class="font-weight-bold">{{ user.followings.count }}</span></P>
+            </div>
+            <div class="col-12 text-truncate">{{ user.intro }}</div>
+        </div>
+    </div>
+    <hr class="mb-0">
+
+    <div class="row">
+        <div class="col-12 col-md-5 border-right">
+            <p class="mt-4"><small class="font-weight-bold">한 줄 리뷰를 남긴 영화</small></p>
+            {% if reviews|length > 0 %}
+                <div class="row">
+                {% for review in reviews %}
+                <div class="col-5 col-sm-4 col-md-3 px-0 my-1 text-center bg-transparent">
+                    <a href="{% url 'community:movie_detail' review.movie.pk %}">
+                        <img src="{{ review.movie.poster_path }}"onerror="this.src='{% static 'img/noposter.jpg' %}'" alt="..."">
+                    </a>
+                </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p>영화에 한 줄 리뷰를 작성하고 평점을 등록해보세요</p>
+            {% endif %}
+        </div>
+        <div id="followArticle" class="col-12 col-md-7">
+          <p class="mt-4 text-right"><small class="font-weight-bold">팔로우의 글</small></p>
+          {% if articles|length > 0 %}
+              {% for article in articles %}
+              <div class="card mb-3" style="max-width: 100%;">
+                  <div class="row no-gutters">
+                    <div class="col-12 col-sm-3">
+                      <a class="text-decoration-none text-body" href="{% url 'community:movie_detail' article.movie.pk %}">
+                        <img src="{{ article.movie.poster_path }}"onerror="this.src='{% static 'img/noposter.jpg' %}'" class="mr-3" alt="..." style="width: 100%;">
+                      </a>
+                    </div>
+                    <div class="col-12 col-sm-9">
+                      <div class="card-body" style="height: 100%;">
+                        <a class="text-decoration-none text-body" href="{% url 'community:article_detail' article.pk %}">
+                          <h5 class="card-title">{{ article.title }}</h5>
+                        </a>
+                        <a class="text-decoration-none text-body" href="{% url 'accounts:detail' article.user.nickname %}">
+                          <img class="img-profile" src="{{ article.user.image_thumbnail.url }}" style="max-width: 40px;">
+                          <span>{{ article.user.nickname }}</span>
+                        </a>
+                        <hr>
+                        {% if request.user in article.like_users.all %}
+                        <i class="fas fa-heart fa-lg like-btn" data-pk="{{ article.pk }}" style="color:crimson"></i>
+                        {% else %}
+                        <i class="fas fa-heart fa-lg like-btn" data-pk="{{ article.pk }}" style="color:black"></i>
+                        {% endif %}
+                        <span class="cnt-{{ article.pk }}">{{ article.like_users.all|length }}</span> 명이 이 글을 좋아합니다
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+          {% else %}
+              <p class="text-right">마음에 드는 리뷰어를 팔로우하고 소식을 받아보세요</p>
+          {% endif %}
+          <div data-next="{{ has_next }}" id="bottomSensor" style="height: 10px;"></div>
+        </div>
+        <div class="mt-4 d-flex w-100 justify-content-center mb-5">
+          <div id="loading" class="spinner-border d-none" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/scrollmonitor/1.2.0/scrollMonitor.js"></script>
+<script>
+  const likeBtns = document.querySelectorAll('.like-btn')
+  // console.log(likeBtns)
+  likeBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(event) {
+      axios.get(`/community/${btn.dataset.pk}/like`)
+        .then(function(res) {
+          if (res.data.liked) {
+            btn.style.color = 'crimson'
+          } else {
+            btn.style.color = 'black'
+          }
+          const cntSpan = document.querySelector(`.cnt-${btn.dataset.pk}`)
+          if (res.data.count !== undefined) {
+            cntSpan.innerText = res.data.count
+          }
+        })
+        .catch(function(err){
+          console.error(err)
+        })
+    })
+  })
+
+  const bottomSensor = document.querySelector('#bottomSensor')
+  const watcher = scrollMonitor.create(bottomSensor)
+  const nickname = document.querySelector('#userNickname').dataset.nickname
+  const followArticle = document.querySelector('#followArticle')
+  const loading = document.querySelector('#loading')
+
+  let has_next = bottomSensor.dataset.next
+  if (has_next === 'False') {
+    has_next = false
+  } else {
+    has_next = true
+  }
+  let page_num = 2
+  // console.log(page_num)
+  watcher.enterViewport(() => {
+    if (has_next) {
+      loading.classList.remove('d-none')
+      // console.log(loading)
+      axios.get(`/accounts/${nickname}/load-more/`, {
+        params: {
+          'page_num': page_num,
+        }
+      })
+      .then(res => {
+        page_num += 1
+        const articles = JSON.parse(res.data.articles)
+        sleep(1000)
+        makeCard(articles)
+        loading.classList.add('d-none')
+      })
+    }
+  })
+
+  function sleep (delay) {
+    var start = new Date().getTime();
+    while (new Date().getTime() < start + delay);
+  }
+
+  // function doMakeCard(articles, delay) {
+  //   window.setTimeout(makeCard(articles), delay)
+  // }
+
+  function makeCard(articles) {
+    articles.forEach(function(article) {
+      let divCard = document.createElement('div')
+      divCard.classList.add('card', 'mb-3')
+      divCard.style.cssText = 'max-width: 100%;'
+
+      let divCardRow = document.createElement('div')
+      divCardRow.classList.add('row', 'no-gutters')
+
+      let divCardRowCol = document.createElement('div')
+      divCardRowCol.classList.add('col-12', 'col-sm-3')
+
+      let aCardRowColA = document.createElement('a')
+      aCardRowColA.classList.add('text-decoration-none', 'text-body')
+      aCardRowColA.setAttribute('href', `/community/${article.movie_pk}/movie_detail`)
+      
+      let imgCardRowColAImg = document.createElement('img')
+      imgCardRowColAImg.setAttribute('src', `${article.movie_poster}`)
+      imgCardRowColAImg.setAttribute('onerror', `this.src='/static/img/noposter.jpg'`)
+      imgCardRowColAImg.style.width = '100%'
+      imgCardRowColAImg.classList.add('mr-3')
+      
+      let divCardRowCol2 = document.createElement('div')
+      divCardRowCol2.classList.add('col-12', 'col-sm-9')
+      
+      let divCardRowColCardbody = document.createElement('div')
+      divCardRowColCardbody.classList.add('card-body')
+      
+      let aCardRowColCardbodyA = document.createElement('a')
+      aCardRowColCardbodyA.classList.add('text-decoration-none', 'text-body')
+      aCardRowColCardbodyA.setAttribute('href', `/community/${article.article_pk}/article_detail`)
+      
+      let h5CardRowColCardbodyAH5 = document.createElement('h5')
+      h5CardRowColCardbodyAH5.classList.add('card-title')
+      h5CardRowColCardbodyAH5.innerText = `${article.article_title}`
+      
+      let aCardRowColCardbodyA2 = document.createElement('a')
+      aCardRowColCardbodyA2.classList.add('text-decoration-none', 'text-body')
+      aCardRowColCardbodyA2.setAttribute('href', `/accounts/${article.user_nickname}/`)
+      
+      let imgCardRowColCardbodyAImg = document.createElement('img')
+      imgCardRowColCardbodyAImg.classList.add('img-profile')
+      imgCardRowColCardbodyAImg.setAttribute('src', `${article.user_image}`)
+      imgCardRowColCardbodyAImg.style.maxWidth = '40px'
+    
+      let spanCardRowColCardbodyA = document.createElement('span')
+      spanCardRowColCardbodyA.innerText = `${article.user_nickname}`
+      
+      let hr = document.createElement('hr')
+      
+      let i = document.createElement('i')
+      i.classList.add('fas', 'fa-heart', 'fa-lg', 'like-btn')
+      i.setAttribute('data-pk', `${article.article_pk}`)
+      if (article.liked) {
+        i.style.color = 'crimson'
+      } else {
+        i.style.color = 'black'
+      }
+      i.addEventListener('click', function(event) {
+        axios.get(`/community/${i.dataset.pk}/like`)
+          .then(function(res) {
+            if (res.data.liked) {
+              i.style.color = 'crimson'
+            } else {
+              i.style.color = 'black'
+            }
+            const cntSpan = document.querySelector(`.cnt-${i.dataset.pk}`) 
+            if (res.data.count !== undefined) {
+              cntSpan.innerText =' ' + res.data.count + ' 명이 이 글을 좋아합니다'
+          }
+          })
+          .catch(function(err){
+            console.error(err)
+          })
+      })
+    
+      let spanCardRowColCardbody = document.createElement('span')
+      spanCardRowColCardbody.classList.add(`cnt-${article.article_pk}`)
+      spanCardRowColCardbody.innerText = ` ${article.like_num} 명이 이 글을 좋아합니다`
+      
+      aCardRowColCardbodyA.appendChild(h5CardRowColCardbodyAH5)
+      aCardRowColCardbodyA2.appendChild(imgCardRowColCardbodyAImg)
+      aCardRowColCardbodyA2.appendChild(spanCardRowColCardbodyA)
+      divCardRowColCardbody.appendChild(aCardRowColCardbodyA)
+      divCardRowColCardbody.appendChild(aCardRowColCardbodyA2)
+      divCardRowColCardbody.appendChild(hr)
+      divCardRowColCardbody.appendChild(i)
+      divCardRowColCardbody.appendChild(spanCardRowColCardbody)
+      divCardRowCol2.appendChild(divCardRowColCardbody)
+      aCardRowColA.appendChild(imgCardRowColAImg)
+      divCardRowCol.appendChild(aCardRowColA)
+      divCardRow.appendChild(divCardRowCol)
+      divCardRow.appendChild(divCardRowCol2)
+      divCard.appendChild(divCardRow)
+      bottomSensor.before(divCard)
+      has_next = article.has_next
+    })
+  }
+
+  const userNameBtn = document.querySelector('#userNameBtn')
+  const editBtns = document.querySelectorAll('.editBtn')
+  const userNickname = document.querySelector('#userNickname')
+  window.onresize = function(e) {
+    resize()
+  }
+
+  function resize() {
+    if (window.innerWidth >= 765) {
+      userNickname.classList.remove('h6')
+      userNickname.classList.remove('text-truncate')
+      userNameBtn.classList.remove('flex-column')
+      userNameBtn.classList.add('flex-row')
+      editBtns.forEach(function(btn){ btn.classList.add('ml-4') })
+    } else {
+      userNickname.classList.add('h6')
+      userNickname.classList.remove('text-truncate')
+      userNameBtn.classList.remove('flex-row')
+      userNameBtn.classList.add('flex-column')
+      editBtns.forEach(function(btn){ btn.classList.remove('ml-4') })
+    }
+  }
+  resize()
+</script>
+{% endblock %}

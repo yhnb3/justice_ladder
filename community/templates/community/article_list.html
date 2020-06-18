@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% load bootstrap_pagination %}
+
+{% block title %}
+<title>{{ movie.title}}의 리뷰</title>
+{% endblock %}
+
+{% block body %}
+<div class="container w-75">
+  <p class="my-2 mb-5 h2 page-title">{{ movie.title|safe }} 리뷰</p>
+  <div class="row mb-1">
+    <div class="col-12 col-sm-6">
+      <a id="wBtn" class="btn btn-outline-dark" href="{% url 'community:article_create' movie.pk %}">상세리뷰작성</a>
+    </div>
+    <div class="col-12 col-sm-6">
+      <form id="searchingForm">
+        <div id="searchForm" class="searchFormHalf input-group input-group-sm ml-auto">
+          <input id="searchQuery" name="article_title" type="text" class="form-control" aria-label="Text input with dropdown button">
+          <div class="input-group-append">
+          <a id="articleTitleSearch" class="btn btn-outline-success">검색</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  <table class="table">
+    <thead>
+      <tr class="row">
+        <th class="d-none d-sm-block col-sm-2 col-md-1 text-center text-truncate" scope="col">번호</th>
+        <th class="col-sm-10 col-md-6 text-center text-truncate" scope="col">제목</th>
+        <th class="d-none d-md-block col-md-3 text-truncate" scope="col">작성자</th>
+        <th class="d-none d-md-block col-md-2 text-truncate" scope="col">작성일</th>
+      </tr>
+    </thead>
+    <tbody class="col-12">
+      {% if page_obj|length > 0 %}
+        {% for article in page_obj %}
+          <tr class="row" onclick="location.href='/community/{{ article.pk }}/article_detail'">
+            <th class="d-none d-sm-block col-sm-2 col-md-1 text-center" scope="row">{{ article.id }}</th>
+            <td class="col-sm-10 col-md-6 title-row">
+              <a class="d-block" href="{% url 'community:article_detail' article.pk %}"></a>
+              [<span class="font-weight-bold">
+              {{ article.movie.title|safe }}</span> ] 
+              {{ article.title }}
+              {% if article.created_at|date:"Y-m-d" == now_date %}
+                <span class="badge badge-success">New</span>
+              {% endif %}
+              {% if article.like_users.all|length > 10 %}
+                <span class="badge badge-danger">Hot</span>
+              {% endif %}
+              </a>
+            </td>
+            <td class="col-md-3 d-none d-md-block text-truncate">{{ article.user.nickname }}</td>
+            <td class="col-md-2 d-none d-md-block text-truncate"> {{ article.created_at|date:"Y.m.d" }}</td>
+          </tr>
+        {% endfor%}
+      {% else %}
+      <tr class="row">
+        <th class="col-1"></th>
+        <td class="col-6 text-right">결과가 없습니다</td>
+        <td class="col-3"></td>
+        <td class="col-2"></td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+  {% bootstrap_paginate page_obj range=5 show_prev_next="false" show_first_last="true" %}
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+  const searchingForm = document.querySelector('#searchingForm')
+  const searchQuery = document.querySelector('#searchQuery')
+  const atBtn = document.querySelector('#articleTitleSearch')
+
+  atBtn.addEventListener('click', function(event){
+    if (searchQuery.value.trim() !== '') {
+      searchQuery.name = 'article_title'
+      searchingForm.submit()
+    }
+  })
+
+  const titles = document.querySelectorAll('.title-row')
+  const searchForm = document.querySelector('#searchForm')
+  const wBtn = document.querySelector('#wBtn')
+  window.onresize = function(e) {
+    resize()
+  }
+
+  function resize() {
+    if (window.innerWidth >= 991) {
+      titles.forEach(function(title) {
+        title.classList.add('text-truncate')
+      })
+      searchForm.classList.remove('w-100')
+      wBtn.classList.remove('btn-block')
+    } else {
+      titles.forEach(function(title) {
+        title.classList.remove('text-truncate')
+      })
+      searchForm.classList.add('w-100')
+      wBtn.classList.add('btn-block')
+    }
+  }
+  resize()
+</script>
+{% endblock %}

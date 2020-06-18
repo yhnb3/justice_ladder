@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% load bootstrap_pagination %}
+
+{% block body %}
+<h1>{{movie.title}}에 대한 한줄평목록</h1>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#review_create">리뷰쓰기</button>
+<div class="modal fade" id="review_create" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">New message</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="{% url 'community:review_create' movie.pk %}">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <button class="btn btn-primary float-right">submit</button>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">id</th>
+      <th scope="col">별점</th>
+      <th scope="col">내용</th>
+      <th scope="col">마지막 수정시간</th>
+      <th scope="col">수정</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for review in page_obj %}
+      <tr>
+        <th scope="row">{{ review.id }}</th>
+        <td>{{ review.rate }}</td>
+        <td>{{ review.content }}</td>
+        <td>{{ review.updated_at }}</td>
+        <td>
+          {% if request.user == review.user %}
+            <button type="button" class="btn btn-primary modalbtn" data-toggle="modal" data-target="#exampleModal" data-id="{{ review.id }}">리뷰수정</button>
+          {% endif %}
+        </td>
+      </tr>
+      <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form method="POST" action="" class="modalform">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                <button class="btn btn-primary float-right">submit</button>
+              </form>
+            </div>
+            <div class="modal-footer">
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor%}
+  </tbody>
+</table>
+{% bootstrap_paginate page_obj range=10 show_prev_next="false" show_first_last="true" %}
+<!--리뷰수정을 구현하기 위해 data-id로 review.id를 넘겨주고 form의 action에 넣어줬다.-->
+{% endblock %}
+
+{% block script %}
+<script>
+  const modalBtns = document.querySelectorAll('.modalbtn')
+  // console.log(likeBtns)
+  modalBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(event) {
+      const modalreviewid = btn.dataset.id
+      const modalform = document.querySelector('.modalform')
+      modalform.action = `/community/${modalreviewid}/review_update`
+    })
+  })
+</script>
+{% endblock %}

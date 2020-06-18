@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% load bootstrap_pagination %}
+
+{% block title %}
+<title>{{ movie.title }}</title>
+{% endblock %}
+
+{% block body %}
+<div class="container w-75 mb-5">
+  <p class="my-2 mb-5 h2 page-title">{{ movie.title|safe }}<small class="text-muted">({{ movie.pub_date }})</small></p>
+  <div id="ytP" class="card mb-3" style="max-width: 100%;">
+    <div class="row no-gutters">
+      <div class="col-12 col-sm-3">
+        <img id="poster" src="{{ movie.poster_path }}"onerror="this.src='{% static 'img/noposter.jpg' %}'" class="mr-3" alt="..." style="width: 100%;">
+      </div>
+      <div class="col-12 col-sm-9">
+        <div class="card-body">
+          <p>{{ movie_genres }}</p>
+          <small class="card-text">감독 : {{ movie.director }}</small>
+          <br>
+          <small class="card-text">출연 : {{ movie.actor }}</small>
+          <p id="ytData" data-title="{{ movie.title }}" data-hash="{{ key }}">평점 <span class="font-weight-bold">{{ movie.user_rate }}</span>점<small class="text-muted ml-2">자료제공 Naver</small></p>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- 한줄평 5개와 한줄평 리스트로 가기-->
+{% if user.is_authenticated %}
+<button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#review_create">한 줄 리뷰 작성하기</button>
+{% endif %}
+<div class="modal fade" id="review_create" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">한 줄 리뷰 작성</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="{% url 'community:review_create' movie.pk %}">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <button class="btn btn-outline-dark float-right">작성</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% if reviews %}
+  <hr>
+    <!-- comment 보여주기 -->
+  {% for review in reviews %}
+  <div class="row ml-2 justify-content-between align-items-baseline">
+      <div class="col-12 col-sm-2">
+        <p class="mb-0 font-weight-bold text-truncate">
+        {% if review.rate < 4 %}
+        <sapn class="badge badge-secondary mr-2">{{ review.rate }}</sapn>
+        {% elif review.rate > 3 and review.rate < 7 %}
+        <sapn class="badge badge-warning mr-2">{{ review.rate }}</sapn>
+        {% else %}
+        <sapn class="badge badge-danger mr-2">{{ review.rate }}</sapn>
+        {% endif %}
+        <a class="text-decoration-none text-body" href="{% url 'accounts:detail' review.user.nickname %}">
+        {{ review.user.nickname }}</p>
+        </a>
+      </div>
+      <div class="col-12 col-sm-8">
+        <p class="mb-0 ml-3 text-wrap"> {{ review.content }}</p>
+      </div>
+      <div class="col-12 col-lg-2">
+        {% if review.user == request.user %}
+        <a class="text-decoration-none text-danger" href="{% url 'community:review_delete' review.pk %}"><small>삭제</small></a>
+        <button type="button" class="btn btn-link modalbtn" data-toggle="modal" data-target="#exampleModal" data-id="{{ review.id }}" style="padding-top:3px;"><small>수정</small></button>
+        <!-- 모달창 -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">한 줄 리뷰 수정</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form method="POST" action="" class="modalform">
+                  {% csrf_token %}
+                  {% bootstrap_form form %}
+                  <button class="btn btn-primary float-right">작성</button>
+                </form>
+              </div>
+              <div class="modal-footer">
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        <div><small class="text-muted">{{ review.created_at|date:"Y.m.d H:i" }}</small></div>
+      </div>
+  </div>
+  <hr>
+  {% endfor %}
+{% else %}
+  <div class="mt-3 mb-5 text-center h4">등록된 한 줄 리뷰가 없습니다.</div>
+{% endif %}
+{% bootstrap_paginate reviews range=5 show_prev_next="false" show_first_last="true" %}
+
+<br>
+<hr>
+<br>
+<!-- article 5개와 article 리스트로 가기-->
+<a class="text-dark font-weight-bold" href="{% url 'community:article_list' movie.pk %}">모든 상세리뷰 보기</a>
+{% if articles %}
+    <table class="table">
+      <thead>
+        <tr class="row">
+          <th class="d-none d-sm-block col-sm-2 col-md-1 text-center text-truncate" scope="col">번호</th>
+          <th class="col-sm-10 col-md-6 text-center text-truncate" scope="col">제목</th>
+          <th class="d-none d-md-block col-md-3 text-truncate" scope="col">작성자</th>
+          <th class="d-none d-md-block col-md-2 text-truncate" scope="col">작성일</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if articles|length > 0 %}
+          {% for article in articles %}
+            <tr class="row" onclick="location.href='/community/{{ article.pk }}/article_detail'">
+              <th class="d-none d-sm-block col-sm-2 col-md-1 text-center" scope="row">{{ article.id }}</th>
+              <td class="col-sm-10 col-md-6 title-row">
+                <a class="d-block" href="{% url 'community:article_detail' article.pk %}"></a>
+                [<span class="font-weight-bold">
+                {{ article.movie.title|safe }}</span> ] 
+                {{ article.title }}
+                {% if article.created_at|date:"Y-m-d" == now_date %}
+                  <span class="badge badge-success">New</span>
+                {% endif %}
+                {% if article.like_users.all|length > 10 %}
+                  <span class="badge badge-danger">Hot</span>
+                {% endif %}
+                </a>
+              </td>
+              <td class="col-md-3 d-none d-md-block text-truncate">{{ article.user.nickname }}</td>
+              <td class="col-md-2 d-none d-md-block text-truncate"> {{ article.created_at|date:"Y.m.d" }}</td>
+            </tr>
+          {% endfor%}
+        {% else %}
+        <tr class="row">
+          <th class="col-1"></th>
+          <td class="col-6 text-right">결과가 없습니다</td>
+          <td class="col-3"></td>
+          <td class="col-2"></td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="my-3 text-center h4">등록된 상세리뷰가 없습니다.</div>
+    {% endif %}
+    <a id="wBtn" class="btn btn-outline-dark mb-5 ml-auto" href="{% url 'community:article_create' movie.pk %}">상세리뷰작성</a>
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script>
+  const mainDiv = document.querySelector('#ytData')
+  const ytP = document.querySelector('#ytP')
+  const hash = mainDiv.dataset.hash
+  const query = mainDiv.dataset.title
+  const API_URL = 'https://www.googleapis.com/youtube/v3/search'
+  function searchMovie(query) {
+    axios.get(API_URL, {
+                params: {
+                key: hash,
+                part: 'snippet',
+                type: 'video',
+                q: query + 'trailer',
+              }
+    })
+    .then(res => {
+      // console.log(res.data)
+      let divTrailer = document.createElement('div')
+      divTrailer.classList.add('embed-responsive', 'embed-responsive-16by9')
+      let iframeTrailer = document.createElement('iframe')
+      iframeTrailer.classList.add('embed-responsive-item')
+      iframeTrailer.setAttribute('src', `https://www.youtube.com/embed/${res.data.items[0].id.videoId}`)
+      iframeTrailer.setAttribute('frameborder', 0)
+      iframeTrailer.setAttribute('allow', 'accelerometer')
+      iframeTrailer.setAttribute('allow', 'autoplay')
+      iframeTrailer.setAttribute('allow', 'encrypted-media')
+      iframeTrailer.setAttribute('allow', 'gyroscope')
+      iframeTrailer.setAttribute('allow', 'picture-in-picture')
+      divTrailer.appendChild(iframeTrailer)
+      ytP.appendChild(divTrailer)
+    })
+  }
+  searchMovie(query)
+
+
+
+  const modalBtns = document.querySelectorAll('.modalbtn')
+  // console.log(likeBtns)
+  modalBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(event) {
+      const modalreviewid = btn.dataset.id
+      const modalform = document.querySelector('.modalform')
+      modalform.action = `/community/${modalreviewid}/review_update`
+    })
+  })
+
+  const titles = document.querySelectorAll('.title-row')
+  window.onresize = function(e) {
+    resize()
+  }
+
+  function resize() {
+    if (window.innerWidth >= 991) {
+      titles.forEach(function(title) {
+        title.classList.add('text-truncate')
+      })
+      poster.style.width = 'auto'
+      poster.style.height = '100%'
+    } else {
+      titles.forEach(function(title) {
+        title.classList.remove('text-truncate')
+      })
+      poster.style.width = '100%'
+      poster.style.height = 'auto'
+    }
+  }
+
+  resize()
+</script>
+{% endblock %}

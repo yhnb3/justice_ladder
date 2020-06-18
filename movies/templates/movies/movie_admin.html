@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% load static %}
+
+{% block title %}
+<title>관리자 페이지</title>
+{% endblock %}
+
+{% block body %}
+<div class="container w-75">
+  <p class="my-2 h2 page-title">영화 등록</p>
+  <form action="{% url 'movies:getmovie' %}" class="mb-4">
+    <div class="input-group mt-5 mb-4">
+      <input type="text" class="form-control" placeholder="영화 제목을 입력하세요" aria-label="영화 제목을 입력하세요" aria-describedby="button-addon2" name="movie_title">
+      <div class="input-group-append">
+        <button class="btn btn-outline-success" type="submit" id="button-addon2">검색</button>
+      </div>
+    </div>
+  </form>
+  <button class="patchBtn btn btn-outline-dark mb-2">등록</button>
+  <a class="btn btn-outline-dark mb-2" href="{% url 'movies:movie_index' %}">목록으로</a>
+  <div class="row">
+    <div class="col-6">
+      {% for movie in Tmdb_movies %}
+        <div class="media border border-secondary rounded mb-4">
+          <img class="tmdb" data-id="tmdb-{{ movie.id }}"src="https://image.tmdb.org/t/p/w92/{{movie.poster_path}}"onerror="this.src='{% static 'img/noposter.jpg' %}'" class="mr-3" alt="...">
+          <div class="media-body">
+            <h5 class="mt-0">{{ movie.original_title }}</h5>
+            <p> 장르 : 
+              {% for genre in movie.genre_ids %} 
+                <span>{{ genre }} </span>
+              {% endfor %}
+            </p>
+            <p>영화 고유 id : {{ movie.id }}</p>
+          </div>
+          <input id="tmdb-{{ movie.id }}" type="checkbox" class="tmdb_check" data-movie_id ="{{ movie.id }}" data-genres ="{{ movie.genre_ids }}">
+        </div>
+      {% endfor %}
+    </div>  
+    <div class="col-6">
+      {% for movie in naver_movies %}
+      <div class="media border border-secondary rounded mb-4">
+        <img class="naver" data-id="{{ movie.link }}" src="{{ movie.image }}"onerror="this.src='{% static 'img/noposter.jpg' %}'" class="mr-3" alt="...">
+        <div class="media-body"  >
+          <h5 class="mt-0">{{ movie.title|safe }}</h5>
+          <p>감독 : {{ movie.director }}</p>
+          <p>배우 :{{ movie.actor }}</p>
+          <p>개봉년도 : {{ movie.pubDate}}</p>
+          <p>평점 : {{ movie.userRating}}</p>
+        </div>
+        <input type="checkbox" class="naver_check" id="{{ movie.link }}"data-title="{{ movie.title }}" data-director="{{ movie.director}}" data-actor="{{ movie.actor }}"
+        data-pubdate="{{ movie.pubDate}}" data-rate="{{ movie.userRating}}" data-poster="{{ movie.image }}">
+      </div>
+      {% endfor %}
+    </div>  
+</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<!--관리자 script-->
+<script>
+    // 영화 등록 부분
+    const naver_movie = document.querySelectorAll('.naver')
+    naver_movie.forEach(naver => {
+      naver.addEventListener('click', function(){
+        const clicked = document.getElementById(naver.dataset.id)
+        clicked.checked = !clicked.checked
+        if (clicked.checked === true){
+          naver.parentNode.classList.add('bg-secondary')
+        } else {
+          naver.parentNode.classList.remove('bg-secondary')
+        }
+      })
+    })
+    const tmdb_movie = document.querySelectorAll('.tmdb')
+    tmdb_movie.forEach(tmdb => {
+      tmdb.addEventListener('click', function(){
+        const clicked = document.getElementById(tmdb.dataset.id)
+        clicked.checked = !clicked.checked
+        if (clicked.checked === true){
+          tmdb.parentNode.classList.add('bg-secondary')
+        } else {
+          tmdb.parentNode.classList.remove('bg-secondary')
+        }
+      })
+    })
+    function removeTags(str) {
+      if ((str===null) || (str===''))
+        return false;
+      else
+        str = str.toString();
+      return str.replace( /(<([^>]+)>)/ig, '');
+    }
+    const movieActor = ""
+    const movieDirector = ""
+    const movieTitle = ""
+    const moviePubDate = ""
+    const movieRate = ""
+    const movieGenres = []
+    const movieId = ""
+    const moviePoster = ""
+    const patchBtn = document.querySelector('.patchBtn')
+    const naverCheck = document.querySelectorAll('.naver_check')
+    patchBtn.addEventListener('click', function(){
+      naverCheck.forEach(chk => {
+        if (chk.checked){
+          this.movieTitle= removeTags(chk.dataset.title)
+          this.moviePubDate = chk.dataset.pubdate
+          this.movieRate = chk.dataset.rate
+          this.movieDirector = chk.dataset.director
+          this.movieActor = chk.dataset.actor
+          this.moviePoster = chk.dataset.poster
+        }
+      })
+      const tmdbCheck = document.querySelectorAll('.tmdb_check')
+      tmdbCheck.forEach(chk => {
+        if (chk.checked) {
+          this.movieId = chk.dataset.movie_id
+          this.movieGenres = chk.dataset.genres
+        }
+      })
+      axios.get('/movies/patchmovie', {
+        params: {
+          title: this.movieTitle,
+          rate: this.movieRate,
+          poster_url: this.moviePoster,
+          movie_id: this.movieId,
+          director: this.movieDirector,
+          genres: this.movieGenres,
+          pub_date: this.moviePubDate,
+          actor: this.movieActor,
+        }
+      })
+      .then(()=> {
+          alert('등록에 성공하였습니다.')
+          tmdbCheck.forEach(chk => {
+            if (chk.checked) {
+              chk.parentNode.style.display = "none"
+            }
+          })
+          naverCheck.forEach(chk => {
+            if (chk.checked){
+              chk.parentNode.style.display = "none"
+            }
+          })
+
+        })
+        .catch(()=> alert('등록에 실패하였습니다.'))
+    })
+</script>
+{% endblock %}

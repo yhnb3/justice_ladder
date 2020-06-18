@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}
+<title>Justice ladder</title>
+{% endblock %}
+
+{% block body %}
+<div class="container w-75">
+  {% if request.resolver_match.url_name == 'userwant' %}
+    <p class="my-2 mb-5 h5 page-title">유저들이 원하는 영화</p>
+  {% else %}
+    <p class="my-2 mb-5 h5 page-title">비판의 날이 날카로울수록 말은 부드러워야 한다</p>
+  {% endif %}
+  <form method="POST" action="">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <button class="btn btn-outline-dark float-right">submit</button>
+  </form>
+</div>
+{% endblock %}

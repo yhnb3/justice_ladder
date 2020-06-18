@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}
+<title>정보수정</title>
+{% endblock %}
+
+{% block body %}
+<div class="ml-auto mr-auto mt-5 w-50">
+    <div class="container">
+        <form action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <button class="btn btn-outline-dark">수정</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

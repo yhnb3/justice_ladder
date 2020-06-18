@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}
+<title>관리자 페이지</title>
+{% endblock %}
+
+{% block body %}
+<div class="container w-75">
+    <p class="my-2 h2 page-title">유저들의 요구</p>
+    <table class="table mb-3 text-center">
+    <thead>
+        <tr class="row">
+        <th class="col-1 text-truncate" scope="col">번호</th>
+        <th class="col-5 text-truncate" scope="col">내용</th>
+        <th class="col-4 text-truncate" scope="col">글쓴이</th>
+        <th class="col-2 text-truncate" scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for want in userwant %}
+        <tr class="row">
+            <th class="col-1 text-truncate" scope="row "><span class="align-middle">{{ want.id }}</span></th>
+            <td class="col-5 text-truncate"><span class="align-middle">{{ want.comment }}</span></td>
+            <td class="col-4 text-truncate"><span class="align-middle">{{ want.user.username }}</span></td>
+            <td class="col-2">
+                <div class="row">
+                    <div class="col-12 col-md-6 px-0">
+                      <form action="{% url 'movies:userwant_delete' want.id %}"><button class="btn btn-outline-danger btn-sm">삭제</button></form>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %} 
+    </tbody>
+    </table>
+</div>
+{% endblock %} 

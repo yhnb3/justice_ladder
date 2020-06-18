@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block body %}
+<h1>인덱스</h1>
+<h3>articles</h3>
+{% for article in articles %}
+  <p>{{ article.id }} : <a href="{% url 'community:article_detail' article.pk %}">{{ article.title }}</a></p>
+{% endfor %}
+<h3>reviews</h3>
+{% for review in reviews %}
+  <p>{{ review.id }} : {{ review.content }}</p>
+{% endfor %}
+<h3>comments</h3>
+{% for comment in comments %}
+  <p>{{ comment.id }} : {{ comment.content }}</p>
+{% endfor %}
+{% endblock %}

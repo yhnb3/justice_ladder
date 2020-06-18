@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}
+<title>관리자 페이지</title>
+{% endblock %}
+
+{% block body %}
+<div class="container my-2 w-50">
+  <p class="h2 page-title">수정하기</p>
+		<form method="POST" action="">
+			{% csrf_token %}
+			{% bootstrap_form form %}
+			<button class="btn btn-primary float-right mb-5">수정하기</button>
+		</form>
+	</div>
+{% endblock %}

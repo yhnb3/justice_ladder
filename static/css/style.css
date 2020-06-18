@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Sunflower:wght@300&display=swap');
+
+html {
+    height: 100%;
+}
+
+body {
+    background-color: #fafafa !important;
+    height: 80%;
+}
+
+#wrap {
+    min-height: 100%;
+}
+
+tbody > .row:hover {
+    cursor: pointer;
+    border-top: 1px solid #FFAAA5;
+    border-bottom: 1px solid #FFAAA5;
+}
+
+th {
+    background-color: #FFFFFF !important;
+    font-size: 0.9rem;
+}
+
+td {
+    background-color: #FFFFFF !important;
+    font-size: 0.9rem;
+}
+
+.btn-outline-dark {
+    font-weight: bold !important;
+    font-size: 0.9rem !important; 
+}
+
+.btn-outline-dark:hover {
+    background-color: transparent !important;
+    color: #000000 !important;
+}
+
+.page-title {
+    font-family: 'Sunflower', sans-serif !important;
+    color: #363062;
+}
+
+.page-title-bg {
+    background-color: #FFD3B6;
+}
+
+.carousel-item {
+    height: auto !important;
+}
+
+.btn-outline-success {
+    color: #7952b3 !important;
+    border-color: #7952b3 !important;
+}
+
+.btn-outline-success:hover {
+    color: #FFFFFF !important;
+    background-color: #7952b3 !important;
+}
+
+.form-inline > .form-control {
+    background-color: #fafafa !important;
+}
+
+ul {
+    justify-content: center !important;
+}
+
+.pagination > li > a {
+    color: #7952b3 !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+.pagination > li > a:focus,
+.pagination > li > a:hover,
+.pagination > li > span:focus,
+.pagination > li > span:hover {
+    color: white !important;
+    background-color: #7952b3 !important;
+    border-color: transparent !important;
+}
+
+.pagination > .active > span {
+    color: red !important;
+    background-color: transparent !important;
+    border: solid 1px #7952b3 !important;
+}
+
+.pagination > .active > span:hover {
+    color: red !important;
+    background-color: transparent !important;
+    border: solid 1px transparent !important;
+}
+
+.pagination > .disabled > span {
+    color: #7952b3 !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+.jumbotron {
+    background-color: #fafafa !important;
+}
+
+#searchForm {
+    width: 35%;
+}
+
+.searchFormHalf {
+    width: 50% !important;
+}
+
+.custom-break-word {
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-break: break-all;
+}
+
+#loading {
+    color: #7952b3 !important;
+}
+
+@-webkit-keyframes hvr-bob {
+    0% {
+      -webkit-transform: translateY(-8px) !important;
+      transform: translateY(-8px) !important;
+    }
+    50% {
+      -webkit-transform: translateY(-4px) !important;
+      transform: translateY(-4px) !important;
+    }
+    100% {
+      -webkit-transform: translateY(-8px) !important;
+      transform: translateY(-8px) !important;
+    }
+  }
+  @keyframes hvr-bob {
+    0% {
+      -webkit-transform: translateY(-8px) !important;
+      transform: translateY(-8px) !important;
+    }
+    50% {
+      -webkit-transform: translateY(-4px) !important;
+      transform: translateY(-4px) !important;
+    }
+    100% {
+      -webkit-transform: translateY(-8px) !important;
+      transform: translateY(-8px) !important;
+    }
+  }
+  @-webkit-keyframes hvr-bob-float {
+    100% {
+      -webkit-transform: translateY(-8px) !important;
+      transform: translateY(-8px) !important;
+    }
+  }
+  @keyframes hvr-bob-float {
+    100% {
+      -webkit-transform: translateY(-8px) !important;
+      transform: translateY(-8px) !important;
+    }
+  }
+  .hvr-bob {
+    display: inline-block;
+    vertical-align: middle;
+    -webkit-transform: perspective(1px) translateZ(0) !important;
+    transform: perspective(1px) translateZ(0) !important;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0) !important;
+  }
+  .hvr-bob:hover, .hvr-bob:focus, .hvr-bob:active {
+    -webkit-animation-name: hvr-bob-float, hvr-bob !important;
+    animation-name: hvr-bob-float, hvr-bob !important;
+    -webkit-animation-duration: .3s, 1.5s !important;
+    animation-duration: .3s, 1.5s !important;
+    -webkit-animation-delay: 0s, .3s !important;
+    animation-delay: 0s, .3s !important;
+    -webkit-animation-timing-function: ease-out, ease-in-out !important;
+    animation-timing-function: ease-out, ease-in-out !important;
+    -webkit-animation-iteration-count: 1, infinite !important;
+    animation-iteration-count: 1, infinite !important;
+    -webkit-animation-fill-mode: forwards !important;
+    animation-fill-mode: forwards !important;
+    -webkit-animation-direction: normal, alternate !important;
+    animation-direction: normal, alternate !important;
+  }

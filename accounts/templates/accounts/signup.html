@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}
+<title>Justice ladder에 어서오세요</title>
+{% endblock %}
+
+{% block body %}
+<div class="ml-auto mr-auto mt-5 w-50">
+    <form action="" method="POST">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        <input class="btn btn-outline-dark btn-lg btn-block" type="submit" value="회원가입">
+    </form>
+</div>
+{% endblock %}

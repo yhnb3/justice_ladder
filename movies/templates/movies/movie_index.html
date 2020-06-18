@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}
+<title>관리자 페이지</title>
+{% endblock %}
+
+{% block body %}
+<div class="container w-75">
+    <p class="my-2 h2 page-title">관리 중인 영화</p>
+    <a class="mt-5 btn btn-outline-dark" href="{% url 'movies:movie_admin' %}">등록하기</a>
+    <a class="mt-5 btn btn-outline-dark" href="{% url 'movies:userwant' %}">고객의 목소리</a>
+    <table class="table mb-3 text-center">
+    <thead>
+        <tr class="row">
+        <th class="col-1 text-truncate" scope="col">번호</th>
+        <th class="col-5 text-truncate" scope="col">제목</th>
+        <th class="col-4 text-truncate" scope="col">감독</th>
+        <th class="col-2 text-truncate" scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for movie in movies %}
+        <tr class="row">
+            <th class="col-1 text-truncate" scope="row "><span class="align-middle">{{ movie.id }}</span></th>
+            <td class="col-5 text-truncate"><span class="align-middle">{{ movie.title|safe }}</span></td>
+            <td class="col-4 text-truncate"><span class="align-middle">{{ movie.director }}</span></td>
+            <td class="col-2">
+                <div class="row">
+                    <div class="col-12 col-md-6 px-0">
+                      <form action="{% url 'movies:movie_edit' movie.id %}"><button class="btn btn-outline-info btn-sm">수정</button></form>
+                    </div>
+                    <div class="col-12 col-md-6 px-0">
+                      <form action="{% url 'movies:movie_delete' movie.id %}"><button class="btn btn-outline-danger btn-sm">삭제</button></form>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %} 
+    </tbody>
+    </table>
+</div>
+{% endblock %}

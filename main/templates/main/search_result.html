@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+<title>{{ movie_title }}의 검색결과</title>
+{% endblock %}
+
+{% block body %}
+<div class="container w-75">
+  <p class="my-2 mb-5 h2 page-title">'<span class="font-weight-bold">{{ movie_title }}</span>' 검색결과</p>
+    <hr>
+    {% if movies|length > 0 %}
+    <div class="row">
+        {% for movie in movies %}
+        <div class="col-6 col-sm-4 col-md-2 mb-1">
+            <a href="{% url 'community:movie_detail' movie.pk %}">
+                <img src="{{ movie.poster_path }}"onerror="this.src='{% static 'img/noposter.jpg' %}'" class="mr-3" alt="..." style="width: 100%;">
+            </a>
+        </div>
+        {% endfor %}
+</div>
+{% else %}
+    <p>'{{ movie_title }}'에 대한 검색결과가 없습니다</p>
+{% endif %}
+</div>
+{% endblock %}
