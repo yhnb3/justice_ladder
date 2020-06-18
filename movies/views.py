@@ -142,6 +142,7 @@ def userwant(request):
     context = {
         'userwant' : userwant,
     }
+    print(context)
     return render(request, 'movies/userwant.html', context)
 
 
